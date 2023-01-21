@@ -51,4 +51,14 @@ export default NuxtAuthHandler({
       },
     }),
   ],
+  callbacks: {
+    // https://next-auth.js.org/getting-started/typescript#module-augmentation
+    // https://sidebase.io/nuxt-auth/recipes/custom-session-data
+    // https://github.com/sidebase/nuxt-auth/issues/148
+    // Callback whenever session is checked, see https://next-auth.js.org/configuration/callbacks#session-callback
+    async session({ session, token, user }) {
+      session.user.id = token.sub;
+      return session;
+    },
+  },
 });
