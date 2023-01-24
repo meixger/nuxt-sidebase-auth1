@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
     return {
       api: "works",
       userdata: userdata,
+      token: token,
     };
   }
   return {

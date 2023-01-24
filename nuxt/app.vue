@@ -4,6 +4,7 @@ const { status, data: session, signIn, signOut } = useSession()
 // need to pass cookie for getServerSession() in ~/api/**
 const headers = useRequestHeaders(['cookie']) as HeadersInit
 const { data: hello } = useFetch("/api/hello", { headers })
+const { data: weatherforecast, error: weatherforecastError, refresh: refreshWeatherforecast } = useFetch("/api/weatherforecast?take=2", { headers })
 </script>
 
 <template>
@@ -12,6 +13,9 @@ const { data: hello } = useFetch("/api/hello", { headers })
   <p>useSession().status: "{{ status }}""</p>
   <pre>useSession().data: {{ JSON.stringify(session, null, 2) }}</pre>
   <pre>/api/hello: {{ hello }}</pre>
+  <hr>
+  <button @click="refreshWeatherforecast()">refresh</button>
+  <pre>/api/weatherforecast: {{ weatherforecast }}{{ weatherforecastError }}</pre>
 </template>
 
 <style>

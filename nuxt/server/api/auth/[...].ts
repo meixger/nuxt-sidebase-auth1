@@ -19,46 +19,74 @@ export default NuxtAuthHandler({
         username: {
           label: "Username",
           type: "text",
-          placeholder: "foo",
-          value: "foo",
+          placeholder: "foo / admin",
         },
         password: { label: "Password", type: "password", value: "bar" },
       },
       async authorize(credentials, req) {
         // TODO extend Session with custom fields https://github.com/sidebase/nuxt-auth/issues/61
-        if (
-          credentials?.username === "foo" &&
-          credentials?.password === "bar"
-        ) {
-          return {
-            id: "22",
-            name: "Foo Bar",
-            email: "foo.bar@example.tld",
-          };
-        } else {
+        try {
+          const res = await fetch("http://localhost:5000/auth/login", {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+              // 'Authorization': `Basic ${token}`,
+            },
+            body: JSON.stringify({
+              username: credentials?.username,
+              password: credentials?.password,
+            }),
+          });
+
+          if (res.ok) {
+            var resjson = await res.json();
+            return resjson;
+          } else {
+            return null;
+          }
+        } catch (error) {
           return null;
         }
-        // // Add logic here to look up the user from the credentials supplied
-        // const user = { id: "1", name: "J Smith", email: "jsmith@example.com" };
-        // if (user) {
-        //   // Any object returned will be saved in `user` property of the JWT
-        //   return user;
-        // } else {
-        //   // If you return null then an error will be displayed advising the user to check their details.
-        //   return null;
-        //   // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
-        // }
       },
     }),
   ],
   callbacks: {
+    // CallbacksOptions in node_modules\.pnpm\next-auth@4.18.0\node_modules\next-auth\core\types.d.ts
     // https://next-auth.js.org/getting-started/typescript#module-augmentation
     // https://sidebase.io/nuxt-auth/recipes/custom-session-data
     // https://github.com/sidebase/nuxt-auth/issues/148
     // Callback whenever session is checked, see https://next-auth.js.org/configuration/callbacks#session-callback
     async session({ session, token, user }) {
       session.user.id = token.sub;
+      session.user.role = token.role;
       return session;
     },
+    jwt({ token, user }) {
+      if (user) token.role = user.role;
+      return token;
+    },
+    // jwt
+    // redirect
+    // signIn
   },
+  events: {
+    // EventCallbacks in node_modules\.pnpm\next-auth@4.18.0\node_modules\next-auth\core\types.d.ts"
+  },
+  // jwt: {
+  //   maxAge: 60 * 20,
+  // },
+  session: {
+    /**
+     * Relative time from now in seconds when to expire the session
+     * @default 2592000 // 30 days
+     */
+    maxAge: 60 * 20,
+    /**
+     * How often the session should be updated in seconds.
+     * If set to `0`, session is updated every time.
+     * @default 86400 // 1 day
+     */
+    updateAge: 86400,
+  },
+  secret: "HXtxpJ77ZEq+iS9omrG6cFXyyFP/ag1iUvNBCzf1m5s=", // openssl rand -base64 32
 });
